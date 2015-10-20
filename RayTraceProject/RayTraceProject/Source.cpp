@@ -70,13 +70,13 @@ private:
 	Point lookfrom, lookto, up;
 public:
 	Camera(Point, Point, Point);
-
+	
 	void print(){
 		cout<<lookfrom.GetX()<<" "<<lookfrom.GetY()<<" "<<lookfrom.GetZ()<<'\n';
 		cout<<lookto.GetX()<<" "<<lookto.GetY()<<" "<<lookto.GetZ()<<'\n';
 		cout<<up.GetX()<<" "<<up.GetY()<<" "<<up.GetZ()<<'\n';
 	}
-
+	
 	Point GetLookFrom(){
 		return lookfrom;
 	}
@@ -123,13 +123,13 @@ Ray ComputeRay(Camera cam, Camera normCam, float a, float b){
 	temp1[0]=normCam.GetLookFrom();
 	temp1[1]=normCam.GetLookTo();
 	temp1[2]=normCam.GetUp();
-
+	
 	temps.SetX(temp1[0].GetX()*a+temp1[1].GetX()*b-temp1[2].GetX());
 	temps.SetY(temp1[0].GetX()*a+temp1[1].GetX()*b-temp1[2].GetX());
 	temps.SetZ(temp1[0].GetX()*a+temp1[1].GetX()*b-temp1[2].GetX());
-
+	
 	n=sqrt((temps.GetX()*temps.GetX())+(temps.GetY()*temps.GetY())+(temps.GetZ()*temps.GetZ()));
-
+	
 	tempp.SetX(temp0.GetX()+(temps.GetX()/n));
 	tempp.SetY(temp0.GetY()+(temps.GetY()/n));
 	tempp.SetZ(temp0.GetZ()+(temps.GetZ()/n));
@@ -149,8 +149,8 @@ Ray RayThruPixel(Camera cam, int i, int j){
 	Camera normCam = NormalizeUVW(cam);
 	normCam.print();
 	system("PAUSE");
-	float a=GetDirectionA(0.5, WIDTH, j);
-	float b=GetDirectionB(0.5, LENGTH, i);
+	float a=GetDirectionA(1, WIDTH, j);
+	float b=GetDirectionB(1, LENGTH, i);
 	temp=ComputeRay(cam,normCam,a,b);
 	return temp;
 }

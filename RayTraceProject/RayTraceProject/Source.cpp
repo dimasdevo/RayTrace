@@ -41,6 +41,37 @@ Point::Point(float a, float b, float c){
 	z=c;
 }
 Point::Point(){};
+// ----------------- Cross, Dot, Normalize Product Function -------------------------------------------------
+Point crossProduct(Point a, Point b)
+{
+    float a1,a2,a3,b1,b2,b3,c1,c2,c3;
+    a1 = a.GetX();
+    a2 = a.GetY();
+    a3 = a.GetZ();
+
+    b1 = b.GetX();
+    b2 = b.GetY();
+    b3 = b.GetZ();
+
+    c1 = (a2*b3) - (a3*b2);
+    c2 = (a3*b1) - (a1*b3);
+    c3 = (a1*b2) - (a2*b1);
+    Point c(c1,c2,c3);
+    return c;
+}
+
+Point normalize(Point a)
+{
+    float a1,a2,a3;
+    a1 = a.GetX();
+    a2 = a.GetY();
+    a3 = a.GetZ();
+    float garisdua = sqrt((a1*a1)+(a2*a2)+(a3*a3));
+
+    Point c(a1/garisdua, a2/garisdua, a3/garisdua);
+    return c;
+}
+
 
 //	-------------------	   Class Ray	----------------------------
 class Ray{
@@ -70,13 +101,13 @@ private:
 	Point lookfrom, lookto, up;
 public:
 	Camera(Point, Point, Point);
-	
+
 	void print(){
 		cout<<lookfrom.GetX()<<" "<<lookfrom.GetY()<<" "<<lookfrom.GetZ()<<'\n';
 		cout<<lookto.GetX()<<" "<<lookto.GetY()<<" "<<lookto.GetZ()<<'\n';
 		cout<<up.GetX()<<" "<<up.GetY()<<" "<<up.GetZ()<<'\n';
 	}
-	
+
 	Point GetLookFrom(){
 		return lookfrom;
 	}
@@ -96,6 +127,8 @@ Camera::Camera(Point a, Point b, Point c){
 	lookto=b;
 	up=c;
 }
+
+
 // ----------------- Codingan Part 1 (Camera Position)---------------------------------------------
 
 // -----------------  Get Variable UVW (Faishal)---------------------------------------
@@ -123,13 +156,13 @@ Ray ComputeRay(Camera cam, Camera normCam, float a, float b){
 	temp1[0]=normCam.GetLookFrom();
 	temp1[1]=normCam.GetLookTo();
 	temp1[2]=normCam.GetUp();
-	
+
 	temps.SetX(temp1[0].GetX()*a+temp1[1].GetX()*b-temp1[2].GetX());
 	temps.SetY(temp1[0].GetX()*a+temp1[1].GetX()*b-temp1[2].GetX());
 	temps.SetZ(temp1[0].GetX()*a+temp1[1].GetX()*b-temp1[2].GetX());
-	
+
 	n=sqrt((temps.GetX()*temps.GetX())+(temps.GetY()*temps.GetY())+(temps.GetZ()*temps.GetZ()));
-	
+
 	tempp.SetX(temp0.GetX()+(temps.GetX()/n));
 	tempp.SetY(temp0.GetY()+(temps.GetY()/n));
 	tempp.SetZ(temp0.GetZ()+(temps.GetZ()/n));

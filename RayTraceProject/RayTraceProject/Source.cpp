@@ -1,199 +1,111 @@
 #include <iostream>
 #include <math.h>
+#include "Point.h"
+#include "Vector.h"
+#include "Matrix.h"
+#include "Camera.h"
+#include "Ray.h"
+#include "Sphere.h"
+#include "FreeImage.h"
 
 #define VECTOR 3
-#define WIDTH 100
-#define LENGTH 100
+#define PHI 3.14159265
 
 using namespace std;
 
-//  ------------------  Class Point ----------------------
-
-class Point{
-private:
-	float x,y,z;
-public:
-	Point();
-	Point(float,float,float);
-	float GetX(){
-		return x;
-	}
-	float GetY(){
-		return y;
-	}
-	float GetZ(){
-		return z;
-	}
-	void SetX(float a){
-		x=a;
-	}
-	void SetY(float b){
-		y=b;
-	}
-	void SetZ(float c){
-		z=c;
-	}
-};
-
-Point::Point(float a, float b, float c){
-	x=a;
-	y=b;
-	z=c;
-}
-Point::Point(){};
-// ----------------- Cross, Dot, Normalize Product Function -------------------------------------------------
-Point crossProduct(Point a, Point b)
-{
-    float a1,a2,a3,b1,b2,b3,c1,c2,c3;
-    a1 = a.GetX();
-    a2 = a.GetY();
-    a3 = a.GetZ();
-
-    b1 = b.GetX();
-    b2 = b.GetY();
-    b3 = b.GetZ();
-
-    c1 = (a2*b3) - (a3*b2);
-    c2 = (a3*b1) - (a1*b3);
-    c3 = (a1*b2) - (a2*b1);
-    Point c(c1,c2,c3);
-    return c;
-}
-
-Point normalize(Point a)
-{
-    float a1,a2,a3;
-    a1 = a.GetX();
-    a2 = a.GetY();
-    a3 = a.GetZ();
-    float garisdua = sqrt((a1*a1)+(a2*a2)+(a3*a3));
-
-    Point c(a1/garisdua, a2/garisdua, a3/garisdua);
-    return c;
-}
-
-
-//	-------------------	   Class Ray	----------------------------
-class Ray{
-private:
-	Point Position;
-	Point Direction;
-	float t_min, t_max;
-public:
-	Ray(Point);
-	Ray();
-	void setRay(Point temp){
-		Position=temp;
-	};
-	Point getRay(){
-		return Position;
-	};
-};
-
-Ray::Ray(Point temp){
-	Position=temp;
-}
-
-Ray::Ray(){}
-//	-------------------	   Class Camera	----------------------------
-class Camera{
-private:
-	Point lookfrom, lookto, up;
-public:
-	Camera(Point, Point, Point);
-
-	void print(){
-		cout<<lookfrom.GetX()<<" "<<lookfrom.GetY()<<" "<<lookfrom.GetZ()<<'\n';
-		cout<<lookto.GetX()<<" "<<lookto.GetY()<<" "<<lookto.GetZ()<<'\n';
-		cout<<up.GetX()<<" "<<up.GetY()<<" "<<up.GetZ()<<'\n';
-	}
-
-	Point GetLookFrom(){
-		return lookfrom;
-	}
-
-	Point GetLookTo(){
-		return lookto;
-	}
-
-	Point GetUp(){
-		return up;
-	}
-};
-
-
-Camera::Camera(Point a, Point b, Point c){
-	lookfrom=a;
-	lookto=b;
-	up=c;
-}
+// ----------------- Codingan Part 2 (Ray intersection)---------------------------------------------
 
 
 // ----------------- Codingan Part 1 (Camera Position)---------------------------------------------
 
 // -----------------  Get Variable UVW (Faishal)---------------------------------------
-Camera NormalizeUVW(Camera cam){
-	Camera temp=cam;
+
+// ----------------- Cross, Dot, Normalize Product Function (+)-------------------------------------------------
+
+Matrix NormalizeUVW(Camera cam){
+	Vector u,v,w;
+
+	Point eye = cam.GetLookFrom();
+	Point center = cam.GetLookTo();
+	Point up = cam.GetUp();
+
+	Vector a=LengthPoint(eye,center);
+	Vector b(up.GetX(), up.GetY(), up.GetZ());
+
+	w = a.normalize();
+	u = (b.crossProduct(w)).normalize();
+	v = w.crossProduct(u);
+
+	Matrix temp(u,v,w);
+
 	return temp;
 }
 
+float GetNFovy(float fov){
+    return tan((fov/2)*PHI/180);
+}
+
+float GetNFovx(float Nfovy, float aspectRatio){
+	return Nfovy/aspectRatio;
+}
 
 float GetDirectionA(float fov, int size, int var){
-	float direction=((float)var-(size/2))/size;
+	float direction=fov*((float)var-(size/2))/size;
 	return direction;
 }
 
 float GetDirectionB(float fov, int size, int var){
-	float direction=((float)(size/2)-var)/size;
+	float direction=fov*((float)(size/2)-var)/size;
 	return direction;
 }
 
-Ray ComputeRay(Camera cam, Camera normCam, float a, float b){
-	Ray temp;
+Ray ComputeRay(Camera cam, Matrix norm, float a, float b){
 	float n;
-	Point temp0, temp1[3], temps, tempp;
-	temp0=cam.GetLookFrom();
-	temp1[0]=normCam.GetLookFrom();
-	temp1[1]=normCam.GetLookTo();
-	temp1[2]=normCam.GetUp();
+	Point eye;
+	Vector U, V, W, temps, tempp;
+	eye=cam.GetLookFrom();
+	U=norm.GetX();
+	V=norm.GetY();
+	W=norm.GetZ();
 
-	temps.SetX(temp1[0].GetX()*a+temp1[1].GetX()*b-temp1[2].GetX());
-	temps.SetY(temp1[0].GetX()*a+temp1[1].GetX()*b-temp1[2].GetX());
-	temps.SetZ(temp1[0].GetX()*a+temp1[1].GetX()*b-temp1[2].GetX());
+	temps.SetX(U.GetX()*a+V.GetX()*b-W.GetX());
+	temps.SetY(U.GetY()*a+V.GetY()*b-W.GetY());
+	temps.SetZ(U.GetZ()*a+V.GetZ()*b-W.GetZ());
 
 	n=sqrt((temps.GetX()*temps.GetX())+(temps.GetY()*temps.GetY())+(temps.GetZ()*temps.GetZ()));
 
-	tempp.SetX(temp0.GetX()+(temps.GetX()/n));
-	tempp.SetY(temp0.GetY()+(temps.GetY()/n));
-	tempp.SetZ(temp0.GetZ()+(temps.GetZ()/n));
+	tempp.SetX((temps.GetX()/n));
+	tempp.SetY((temps.GetY()/n));
+	tempp.SetZ((temps.GetZ()/n));
 
-	cout<<tempp.GetX()<<" "<<tempp.GetY()<<" "<<tempp.GetZ()<<'\n';
-	cout<<temp1[0].GetX()<<" "<<temp1[0].GetY()<<" "<<temp1[0].GetZ()<<'\n';
-	cout<<temp1[1].GetX()<<" "<<temp1[1].GetY()<<" "<<temp1[1].GetZ()<<'\n';
-	cout<<temp1[2].GetX()<<" "<<temp1[2].GetY()<<" "<<temp1[2].GetZ()<<'\n';
-
-
-	system("PAUSE");
-	return temp0;
+	Ray temp(eye, tempp);
+	return temp;
 }
 
-Ray RayThruPixel(Camera cam, int i, int j){
+
+Ray RayThruPixel(Camera cam, int i, int j, float width, float length){
 	Ray temp;
-	Camera normCam = NormalizeUVW(cam);
-	normCam.print();
-	system("PAUSE");
-	float a=GetDirectionA(1, WIDTH, j);
-	float b=GetDirectionB(1, LENGTH, i);
-	temp=ComputeRay(cam,normCam,a,b);
+	
+	Matrix norm = NormalizeUVW(cam);
+	float fovy=cam.Getfovy();
+	float Nfovy=GetNFovy(fovy);
+	float Nfovx=GetNFovx(Nfovy,width/length);
+	float a=GetDirectionA(Nfovx, width, j);
+	float b=GetDirectionB(Nfovy, length, i);
+	temp=ComputeRay(cam,norm,a,b);
 	return temp;
 }
 
 
 //  --------------------- RayTrace Algorithm --------------------------------------
-void RayTrace(Camera cam, int width, int height){
+void RayTrace(Camera cam, float width, float length){
 	for(int i=0; i<width; i++){
-		for(int j=0; j<height; j++){
-			Ray ray=RayThruPixel(cam, i, j);
+		for(int j=0; j<length; j++){
+			Ray ray=RayThruPixel(cam, i, j, width, length);
+			cout<<ray.getPosition().GetX()<<" "<<ray.getPosition().GetY()<<" "<<ray.getPosition().GetZ()<<'\n';
+			cout<<ray.getDirection().GetX()<<" "<<ray.getDirection().GetY()<<" "<<ray.getDirection().GetZ()<<'\n';
+			system("PAUSE");
+			//bool hit=Intersect(ray,scene);
 		}
 	}
 }
@@ -202,7 +114,9 @@ void RayTrace(Camera cam, int width, int height){
 
 int main(int argc, char *argv[]){
 	Point posisiKamera[4];
-	float a,b,c;
+	float a,b,c,fov,width,length;
+	cout<<"Masukkan Panjang dan Lebar gambar :"<<'\n';
+	cin>>width>>length;
 	cout<<"Masukkan koordinat kamera: \n";
 	for(int i=0; i<VECTOR; i++){
 		cin>>a>>b>>c;
@@ -210,9 +124,10 @@ int main(int argc, char *argv[]){
 		posisiKamera[i].SetY(b);
 		posisiKamera[i].SetZ(c);
 	}
-	Camera A(posisiKamera[0], posisiKamera[1], posisiKamera[2]);
+	cin>>fov;
+	Camera A(posisiKamera[0], posisiKamera[1], posisiKamera[2],fov);
 	A.print();
 	system("PAUSE");
-	RayTrace(A,WIDTH,LENGTH);
+	RayTrace(A,width,length);
 	return 0;
 }

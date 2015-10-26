@@ -11,7 +11,12 @@ private:
 	Point B;
 	Point C;
 public:
-	Triangle(Point, Point, Point);
+	Triangle();
+	void SetTriangle(Point a, Point b, Point c){
+		A=a;
+		B=b;
+		C=c;
+	}	
 	Point GetA(){
 		return A;
 	};
@@ -23,15 +28,11 @@ public:
 	};
 };
 
-Triangle::Triangle(Point a, Point b, Point c){
-	A=a;
-	B=b;
-	C=c;
-}
+Triangle::Triangle(){};
 
 // -------------- Function Triangle Intersection -----------------------------------------------
 
-bool Intersection_Triangle(Ray ray, Triangle obj){
+float Intersection_Triangle(Ray ray, Triangle obj){
 	Point A=obj.GetA();
 	Point B=obj.GetB();
 	Point C=obj.GetC();
@@ -42,6 +43,7 @@ bool Intersection_Triangle(Ray ray, Triangle obj){
 	float a=(ray.getDirection()).dotProduct(n);
 	if(a==0){
 		//Ray Paralel
+		return -1;
 	}else{
 		float t = (dotProduct(n,A)-dotProduct(n,ray.getPosition()))/(n.dotProduct(ray.getDirection()));
 	
@@ -68,9 +70,13 @@ bool Intersection_Triangle(Ray ray, Triangle obj){
 		float test3=(AB.crossProduct(QB)).dotProduct(n);
 
 		if((test1>=0)&&(test2>=0)&&(test3>=0)){
-			return true;
+			Point eye=ray.getPosition();
+			float a=eye.GetX()-Qx;
+			float b=eye.GetY()-Qy;
+			float c=eye.GetZ()-Qz;
+			return sqrt(a*a+b*b+c*c);
 		}else
-			return false;
+			return -1;
 	}
 }
 

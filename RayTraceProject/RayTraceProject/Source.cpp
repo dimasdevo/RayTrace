@@ -1,11 +1,13 @@
 #include <iostream>
 #include <math.h>
+#include <string>
 #include "Point.h"
 #include "Vector.h"
 #include "Matrix.h"
 #include "Camera.h"
 #include "Ray.h"
 #include "Sphere.h"
+#include "Triangle.h"
 #include "FreeImage.h"
 
 #define VECTOR 3
@@ -13,9 +15,85 @@
 
 using namespace std;
 
+class Intersection{
+private:
+	//if obj==1 circle, obj==2 triangle
+	int obj;
+	int obj_list;
+public:
+	Intersection(){};
+	void Set_Intersection(int a, int b){
+		obj=a;
+		obj_list=b;
+	}
+	int Get_Obj(){
+		return obj;
+	}
+	int Get_ObjList(){
+		return obj_list;
+	}
+};
+
+class Scene{
+private:
+	Sphere sphere[10];
+	Triangle tri[10];
+	int sphereCount;
+	int triCount;
+public:
+	Scene();
+	void Add_Sphere(int radius, Point center){
+		sphere[sphereCount].SetSphere(center,radius);
+		sphereCount++;
+	}
+	void Add_Triangle(Point A, Point B, Point C){
+		tri[triCount].SetTriangle(A,B,C);
+		triCount++;
+	}
+	int Get_SphereCount(){
+		return sphereCount;
+	}
+	int Get_TriCount(){
+		return triCount;
+	}
+	Sphere Get_Sphere(int flag){
+		return sphere[flag];
+	}
+	Triangle Get_Tri(int flag){
+		return tri[flag];
+	}
+};
+Scene::Scene(){
+	sphereCount=0;
+	triCount=0;
+};
 // ----------------- Codingan Part 2 (Ray intersection)---------------------------------------------
-
-
+Intersection Intersect(Ray ray, Scene scene){
+	Intersection intersectionInfo;
+	int triCount=scene.Get_TriCount();
+	int SphereCount=scene.Get_SphereCount();
+	// Find Intersection
+	int obj=-1, obj_list=-1;
+	float t=-1, mindist=-1;
+	for(int i=0; i<triCount; i++){
+		Triangle tri=scene.Get_Tri(i);
+		t=Intersection_Triangle(ray, tri);
+		if(t!=-1 && mindist<t){
+			obj=2;
+			obj_list=i;
+		}
+	}
+	for(int j=0; j<SphereCount; j++){
+		Sphere sphere=scene.Get_Sphere(i);
+		t=Intersection_Sphere(ray, sphere);
+		if(t!=-1 && mindist<t){
+			obj=1;
+			obj_list=j;
+		}
+	}
+	intersectionInfo.Set_Intersection(obj,obj_list);
+	return intersectionInfo;
+}
 // ----------------- Codingan Part 1 (Camera Position)---------------------------------------------
 
 // -----------------  Get Variable UVW (Faishal)---------------------------------------
@@ -98,14 +176,14 @@ Ray RayThruPixel(Camera cam, int i, int j, float width, float length){
 
 
 //  --------------------- RayTrace Algorithm --------------------------------------
-void RayTrace(Camera cam, float width, float length){
+void RayTrace(Camera cam, float width, float length, Scene scene){
 	for(int i=0; i<width; i++){
 		for(int j=0; j<length; j++){
 			Ray ray=RayThruPixel(cam, i, j, width, length);
 			cout<<ray.getPosition().GetX()<<" "<<ray.getPosition().GetY()<<" "<<ray.getPosition().GetZ()<<'\n';
 			cout<<ray.getDirection().GetX()<<" "<<ray.getDirection().GetY()<<" "<<ray.getDirection().GetZ()<<'\n';
 			system("PAUSE");
-			//bool hit=Intersect(ray,scene);
+			Intersection hit=Intersect(ray,scene);
 		}
 	}
 }

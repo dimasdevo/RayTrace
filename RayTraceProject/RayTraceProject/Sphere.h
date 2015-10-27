@@ -55,22 +55,26 @@ float Intersection_Sphere(Ray ray, Sphere obj){
 			(2*(ray_origin.GetZ()-sphere_center.GetZ())*ray_direction.GetZ());
 	float c=(pow(ray_origin.GetX()-sphere_center.GetX(),2))+
 			(pow(ray_origin.GetY()-sphere_center.GetY(),2))+
-			(pow(ray_origin.GetZ()-sphere_center.GetZ(),2))+(radius*radius);
+			(pow(ray_origin.GetZ()-sphere_center.GetZ(),2))-(radius*radius);
 	float discriminat=b*b-4*a*c;
+	//cout<<"discriminat : "<<discriminat<<'\n';
 	if(discriminat>0){
 		float x1=(-b+sqrt(discriminat))/2*a;
 		float x2=(-b-sqrt(discriminat))/2*a;
 		if(x1>0)
 		{
+			//cout<<"A"<<'\n';
 			Point intersectionPoint=Interscetion_Point(ray,x1);
 			distance=Distance_Point(ray.getPosition(),intersectionPoint);
 			return distance;
 		}
 		else if(x2>0)
 		{
+			//cout<<"B"<<'\n';
 			Point intersectionPoint=Interscetion_Point(ray,x1);
 			distance=Distance_Point(ray.getPosition(),intersectionPoint);
-			return distance;		}
+			return distance;		
+		}
 		else return -1;
 	}
 	else return -1;

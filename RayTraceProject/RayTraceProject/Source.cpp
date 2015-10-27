@@ -12,6 +12,7 @@
 
 #define VECTOR 3
 #define PHI 3.14159265
+#define BPP 24
 
 using namespace std;
 
@@ -42,7 +43,7 @@ private:
 	int triCount;
 public:
 	Scene();
-	void Add_Sphere(int radius, Point center){
+	void Add_Sphere(float radius, Point center){
 		sphere[sphereCount].SetSphere(center,radius);
 		sphereCount++;
 	}
@@ -84,7 +85,7 @@ Intersection Intersect(Ray ray, Scene scene){
 		}
 	}
 	for(int j=0; j<SphereCount; j++){
-		Sphere sphere=scene.Get_Sphere(i);
+		Sphere sphere=scene.Get_Sphere(j);
 		t=Intersection_Sphere(ray, sphere);
 		if(t!=-1 && mindist<t){
 			obj=1;
@@ -177,21 +178,46 @@ Ray RayThruPixel(Camera cam, int i, int j, float width, float length){
 
 //  --------------------- RayTrace Algorithm --------------------------------------
 void RayTrace(Camera cam, float width, float length, Scene scene){
+	FreeImage_Initialise();
+
+	FIBITMAP* bitmap=FreeImage_Allocate(width, length, BPP);
+	RGBQUAD color;
+
+	if(!bitmap)
+		exit(1);
+
 	for(int i=0; i<width; i++){
 		for(int j=0; j<length; j++){
 			Ray ray=RayThruPixel(cam, i, j, width, length);
-			cout<<ray.getPosition().GetX()<<" "<<ray.getPosition().GetY()<<" "<<ray.getPosition().GetZ()<<'\n';
-			cout<<ray.getDirection().GetX()<<" "<<ray.getDirection().GetY()<<" "<<ray.getDirection().GetZ()<<'\n';
-			system("PAUSE");
+			//cout<<ray.getPosition().GetX()<<" "<<ray.getPosition().GetY()<<" "<<ray.getPosition().GetZ()<<'\n';
+			//cout<<ray.getDirection().GetX()<<" "<<ray.getDirection().GetY()<<" "<<ray.getDirection().GetZ()<<'\n';
+			//system("PAUSE");
 			Intersection hit=Intersect(ray,scene);
+			if(hit.Get_Obj()>0){
+				color.rgbGreen=255;
+				color.rgbBlue=255;
+				color.rgbRed=255;
+				FreeImage_SetPixelColor(bitmap,i,j,&color);
+				//cout<<hit.Get_Obj()<<'\n';
+			}
+			else{
+				color.rgbGreen=0;
+				color.rgbBlue=0;
+				color.rgbRed=0;
+				FreeImage_SetPixelColor(bitmap,i,j,&color);
+			}
 		}
 	}
+	if(FreeImage_Save(FIF_PNG,bitmap,"test.png",0))
+		cout<<"Image berhasil dicetak";
+	FreeImage_DeInitialise();
 }
 
 //  ---------------------- Main Program.c -----------------------------------
 
 int main(int argc, char *argv[]){
 	Point posisiKamera[4];
+	Scene scene;
 	float a,b,c,fov,width,length;
 	cout<<"Masukkan Panjang dan Lebar gambar :"<<'\n';
 	cin>>width>>length;
@@ -202,10 +228,17 @@ int main(int argc, char *argv[]){
 		posisiKamera[i].SetY(b);
 		posisiKamera[i].SetZ(c);
 	}
+	//cout<<"Masukkan Benda";
 	cin>>fov;
 	Camera A(posisiKamera[0], posisiKamera[1], posisiKamera[2],fov);
 	A.print();
+	Point Tri1(0,0,0);
+	Point Tri2(1,0,1);
+	Point Tri3(1,1,0);
+	scene.Add_Triangle(Tri1,Tri2,Tri3);
+	Point sphere1(0,-1,0);
+	scene.Add_Sphere(1,sphere1);
+	RayTrace(A,width,length,scene);
 	system("PAUSE");
-	RayTrace(A,width,length);
 	return 0;
 }

@@ -1,15 +1,15 @@
-﻿Build started 10/28/2015 7:43:49 PM.
+﻿Build started 10/28/2015 10:55:55 PM.
      1>Project "E:\KAMPUS\Kuliah ITS\Semester 7\Topik IGS\FP\Repo\RayTrace\RayTraceProject\RayTraceProject\RayTraceProject.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"E:\KAMPUS\Kuliah ITS\Semester 7\Topik IGS\FP\MVS\RayTraceProject\RayTraceProject\Dependencies" /ZI /nologo /W3 /WX- /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt Source.cpp
          Source.cpp
-     1>e:\kampus\kuliah its\semester 7\topik igs\fp\repo\raytrace\raytraceproject\raytraceproject\source.cpp(124): warning C4244: 'return' : conversion from 'double' to 'float', possible loss of data
-     1>e:\kampus\kuliah its\semester 7\topik igs\fp\repo\raytrace\raytraceproject\raytraceproject\source.cpp(142): warning C4101: 'n' : unreferenced local variable
-     1>e:\kampus\kuliah its\semester 7\topik igs\fp\repo\raytrace\raytraceproject\raytraceproject\source.cpp(168): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
-     1>e:\kampus\kuliah its\semester 7\topik igs\fp\repo\raytrace\raytraceproject\raytraceproject\source.cpp(169): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
-     1>e:\kampus\kuliah its\semester 7\topik igs\fp\repo\raytrace\raytraceproject\raytraceproject\source.cpp(179): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
-     1>e:\kampus\kuliah its\semester 7\topik igs\fp\repo\raytrace\raytraceproject\raytraceproject\source.cpp(196): warning C4244: 'argument' : conversion from 'float' to 'unsigned int', possible loss of data
-     1>e:\kampus\kuliah its\semester 7\topik igs\fp\repo\raytrace\raytraceproject\raytraceproject\source.cpp(203): warning C4244: 'argument' : conversion from 'float' to 'unsigned int', possible loss of data
+     1>e:\kampus\kuliah its\semester 7\topik igs\fp\repo\raytrace\raytraceproject\raytraceproject\source.cpp(126): warning C4244: 'return' : conversion from 'double' to 'float', possible loss of data
+     1>e:\kampus\kuliah its\semester 7\topik igs\fp\repo\raytrace\raytraceproject\raytraceproject\source.cpp(144): warning C4101: 'n' : unreferenced local variable
+     1>e:\kampus\kuliah its\semester 7\topik igs\fp\repo\raytrace\raytraceproject\raytraceproject\source.cpp(170): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
+     1>e:\kampus\kuliah its\semester 7\topik igs\fp\repo\raytrace\raytraceproject\raytraceproject\source.cpp(171): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
+     1>e:\kampus\kuliah its\semester 7\topik igs\fp\repo\raytrace\raytraceproject\raytraceproject\source.cpp(181): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
+     1>e:\kampus\kuliah its\semester 7\topik igs\fp\repo\raytrace\raytraceproject\raytraceproject\source.cpp(198): warning C4244: 'argument' : conversion from 'float' to 'unsigned int', possible loss of data
+     1>e:\kampus\kuliah its\semester 7\topik igs\fp\repo\raytrace\raytraceproject\raytraceproject\source.cpp(205): warning C4244: 'argument' : conversion from 'float' to 'unsigned int', possible loss of data
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"E:\KAMPUS\Kuliah ITS\Semester 7\Topik IGS\FP\Repo\RayTrace\RayTraceProject\Debug\RayTraceProject.exe" /INCREMENTAL /NOLOGO /LIBPATH:"E:\KAMPUS\Kuliah ITS\Semester 7\Topik IGS\FP\MVS\RayTraceProject\RayTraceProject\Dependencies" FreeImage.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:\KAMPUS\Kuliah ITS\Semester 7\Topik IGS\FP\Repo\RayTrace\RayTraceProject\Debug\RayTraceProject.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:\KAMPUS\Kuliah ITS\Semester 7\Topik IGS\FP\Repo\RayTrace\RayTraceProject\Debug\RayTraceProject.lib" /MACHINE:X86 Debug\Source.obj
          RayTraceProject.vcxproj -> E:\KAMPUS\Kuliah ITS\Semester 7\Topik IGS\FP\Repo\RayTrace\RayTraceProject\Debug\RayTraceProject.exe
@@ -17,4 +17,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:02.87
+Time Elapsed 00:00:04.89

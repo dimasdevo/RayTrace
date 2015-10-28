@@ -11,7 +11,6 @@ private:
 	Vector X, Y, Z;
 public:
 	Matrix(Vector, Vector, Vector);
-	Matrix(Vector, Vector, Vector, float);
 
 	Vector GetX(){
 		return X;
@@ -29,12 +28,6 @@ public:
 
 
 Matrix::Matrix(Vector a, Vector b, Vector c){
-	X=a;
-	Y=b;
-	Z=c;
-}
-
-Matrix::Matrix(Vector a, Vector b, Vector c, float d){
 	X=a;
 	Y=b;
 	Z=c;

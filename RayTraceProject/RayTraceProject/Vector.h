@@ -43,7 +43,7 @@ public:
 		a3 = a.GetZ();
 
 		b1 = (y*a3) - (z*a2);
-		b2 = (z*a1) - (x*a3);
+		b2 = ((z*a1) - (x*a3));
 		b3 = (x*a2) - (y*a1);
 		Vector b(b1,b2,b3);
 		return b;

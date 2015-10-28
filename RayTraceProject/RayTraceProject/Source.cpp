@@ -151,44 +151,40 @@ Ray ComputeRay(Camera cam, Matrix norm, float a, float b){
 	temps.SetY(U.GetY()*a+V.GetY()*b-W.GetY());
 	temps.SetZ(U.GetZ()*a+V.GetZ()*b-W.GetZ());
 
-	n=sqrt((temps.GetX()*temps.GetX())+(temps.GetY()*temps.GetY())+(temps.GetZ()*temps.GetZ()));
-
-	tempp.SetX((temps.GetX()/n));
-	tempp.SetY((temps.GetY()/n));
-	tempp.SetZ((temps.GetZ()/n));
+	tempp=temps.normalize();
 
 	Ray temp(eye, tempp);
 	return temp;
 }
 
 
-Ray RayThruPixel(Camera cam, int i, int j, float width, float length){
+Ray RayThruPixel(Camera cam, int i, int j, float width, float height){
 	Ray temp;
 	
 	Matrix norm = NormalizeUVW(cam);
 	float fovy=cam.Getfovy();
 	float Nfovy=GetNFovy(fovy);
-	float Nfovx=GetNFovx(Nfovy,width/length);
-	float a=GetDirectionA(Nfovx, width, j);
-	float b=GetDirectionB(Nfovy, length, i);
+	float Nfovx=GetNFovx(Nfovy,width/height);
+	float a=GetDirectionA(Nfovx, width, j)*(Nfovy/Nfovx);
+	float b=GetDirectionB(Nfovy, height, i)*(Nfovx/Nfovy);
 	temp=ComputeRay(cam,norm,a,b);
 	return temp;
 }
 
 
 //  --------------------- RayTrace Algorithm --------------------------------------
-void RayTrace(Camera cam, float width, float length, Scene scene){
+void RayTrace(Camera cam, float width, float height, Scene scene){
 	FreeImage_Initialise();
 
-	FIBITMAP* bitmap=FreeImage_Allocate(width, length, BPP);
+	FIBITMAP* bitmap=FreeImage_Allocate(width, height, BPP);
 	RGBQUAD color;
 
 	if(!bitmap)
 		exit(1);
 
-	for(int i=0; i<width; i++){
-		for(int j=0; j<length; j++){
-			Ray ray=RayThruPixel(cam, i, j, width, length);
+	for(int i=0; i<height; i++){
+		for(int j=0; j<width; j++){
+			Ray ray=RayThruPixel(cam, i, j, width, height);
 			//cout<<ray.getPosition().GetX()<<" "<<ray.getPosition().GetY()<<" "<<ray.getPosition().GetZ()<<'\n';
 			//cout<<ray.getDirection().GetX()<<" "<<ray.getDirection().GetY()<<" "<<ray.getDirection().GetZ()<<'\n';
 			//system("PAUSE");
@@ -197,18 +193,18 @@ void RayTrace(Camera cam, float width, float length, Scene scene){
 				color.rgbGreen=255;
 				color.rgbBlue=255;
 				color.rgbRed=255;
-				FreeImage_SetPixelColor(bitmap,i,j,&color);
+				FreeImage_SetPixelColor(bitmap,j,height-i,&color);
 				//cout<<hit.Get_Obj()<<'\n';
 			}
 			else{
-				color.rgbGreen=0;
+				color.rgbGreen=255;
 				color.rgbBlue=0;
 				color.rgbRed=0;
-				FreeImage_SetPixelColor(bitmap,i,j,&color);
+				FreeImage_SetPixelColor(bitmap,j,height-i,&color);
 			}
 		}
 	}
-	if(FreeImage_Save(FIF_PNG,bitmap,"test.png",0))
+	if(FreeImage_Save(FIF_PNG,bitmap,"test8.png",0))
 		cout<<"Image berhasil dicetak";
 	FreeImage_DeInitialise();
 }
@@ -218,9 +214,9 @@ void RayTrace(Camera cam, float width, float length, Scene scene){
 int main(int argc, char *argv[]){
 	Point posisiKamera[4];
 	Scene scene;
-	float a,b,c,fov,width,length;
-	cout<<"Masukkan Panjang dan Lebar gambar :"<<'\n';
-	cin>>width>>length;
+	float a,b,c,fov,width,height;
+	cout<<"Masukkan Lebar dan Tinggi gambar :"<<'\n';
+	cin>>width>>height;
 	cout<<"Masukkan koordinat kamera: \n";
 	for(int i=0; i<VECTOR; i++){
 		cin>>a>>b>>c;
@@ -233,12 +229,12 @@ int main(int argc, char *argv[]){
 	Camera A(posisiKamera[0], posisiKamera[1], posisiKamera[2],fov);
 	A.print();
 	Point Tri1(0,0,0);
-	Point Tri2(1,0,1);
-	Point Tri3(1,1,0);
+	Point Tri2(-1,0,0);
+	Point Tri3(-1,-1,0);
 	scene.Add_Triangle(Tri1,Tri2,Tri3);
-	Point sphere1(0,-1,0);
+	Point sphere1(1,.5,0);
 	scene.Add_Sphere(1,sphere1);
-	RayTrace(A,width,length,scene);
+	RayTrace(A,width,height,scene);
 	system("PAUSE");
 	return 0;
 }

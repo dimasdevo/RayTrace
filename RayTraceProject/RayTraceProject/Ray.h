@@ -7,7 +7,6 @@ class Ray{
 private:
 	Point position;
 	Vector direction;
-	float t_min, t_max;
 public:
 	Ray();
 	Ray(Point);

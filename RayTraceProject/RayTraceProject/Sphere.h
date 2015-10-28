@@ -59,8 +59,8 @@ float Intersection_Sphere(Ray ray, Sphere obj){
 	float discriminat=b*b-4*a*c;
 	//cout<<"discriminat : "<<discriminat<<'\n';
 	if(discriminat>0){
-		float x1=(-b+sqrt(discriminat))/2*a;
-		float x2=(-b-sqrt(discriminat))/2*a;
+		float x1=(-b+sqrt(discriminat))/(2*a);
+		float x2=(-b-sqrt(discriminat))/(2*a);
 		if(x1>0)
 		{
 			//cout<<"A"<<'\n';

@@ -14,6 +14,10 @@ public:
 	void setRay(Point temp){
 		position=temp;
 	};
+	void setRay(Point temp1, Vector temp2){
+		position=temp1;
+		direction=temp2;
+	}
 	Point getPosition(){
 		return position;
 	};

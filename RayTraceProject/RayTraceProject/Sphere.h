@@ -2,17 +2,32 @@
 #define SPHERE_H_INCLUDED
 
 #include "Point.h"
+#include "Transformation.h"
 
 class Sphere{
 private:
 	Point center;
 	float radius;
+	Transformsphere transform[100];
+	int t_transform;
 public:
 	Sphere();
 	void SetSphere(Point C,float r){
 		center=C;
 		radius=r;
 	};
+	void SetTransform(Point a, int iter){
+		transform[iter].SetXYZ(a.GetX(),a.GetY(),a.GetZ());
+		t_transform++;
+	}
+	Point GetTransformSphere(int iter){
+		Point res(transform[iter].GetX(),transform[iter].GetY(),transform[iter].GetZ());
+		return res;
+	}
+	int GetTTransform()
+	{
+		return t_transform;
+	}
 	Point GetCenter(){
 		return center;
 	};
@@ -21,7 +36,9 @@ public:
 	};
 };
 
-Sphere::Sphere(){};
+Sphere::Sphere(){
+	t_transform=0;
+};
 
 // -------------- Function Sphere Intersection -----------------------------------------------
 

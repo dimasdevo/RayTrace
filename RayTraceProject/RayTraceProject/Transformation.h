@@ -1,39 +1,84 @@
 #ifndef TRANSFORMATION_H_INCLUDED
 #define TRANSFORMATION_H_INCLUDED
 
-#include "Vector.h"
+#include "Point.h"
 #include <math.h>
 
 #define PHI 3.14159265
 
 using namespace std;
 
+class Transformsphere{
+private:
+	float x,y,z;
+public:
+	Transformsphere(){};
+	void SetXYZ(float a, float b, float c){
+		x=a;
+		y=b;
+		z=c;
+	}
+	float GetX(){
+		return x;
+	}
+	float GetY(){
+		return y;
+	}
+	float GetZ(){
+		return z;
+	}
+};
+
 int round(double d){
         return static_cast<int>(d + 0.5);
 }
 
 // ---------------Tranformation Function------------------------- //
-Vector TransformTranslate(Vector a, Vector value){
+Point TransformTranslate(Point a, Point value){
     float temp1, temp2, temp3;
     temp1 = a.GetX() + value.GetX();
     temp2 = a.GetY() + value.GetY();
     temp3 = a.GetZ() + value.GetZ();
 
-    Vector res(temp1,temp2,temp3);
+	Point res(temp1,temp2,temp3);
     return res;
 }
 
-Vector TransformScale(Vector a, Vector value){
+Point TransformScale(Point a, Point value){
     float temp1, temp2, temp3;
     temp1 = a.GetX() * value.GetX();
     temp2 = a.GetY() * value.GetY();
     temp3 = a.GetZ() * value.GetZ();
 
-    Vector res(temp1,temp2,temp3);
+	Point res(temp1,temp2,temp3);
     return res;
 }
 
-Vector TransformRotate(Vector a, Vector center, float degree){
+Point InvTransformScale(Point value, Point a){
+    float temp1, temp2, temp3;
+	temp1 = (1/value.GetX()) * a.GetX();
+	temp2 = (1/value.GetY()) * a.GetY();
+	temp3 = (1/value.GetZ()) * a.GetZ();
+
+	Point res(temp1,temp2,temp3);
+    return res;
+}
+
+Vector InvTransformScale(Point value, Vector a){
+    float temp1, temp2, temp3;
+	temp1 = (1/value.GetX()) * a.GetX();
+	temp2 = (1/value.GetY()) * a.GetY();
+	temp3 = (1/value.GetZ()) * a.GetZ();
+
+	Vector res(temp1,temp2,temp3);
+    return res;
+}
+float TransformScale(float a, Point value){
+    float res=a*value.GetX();
+    return res;
+}
+
+Point TransformRotate(Point a, Point center, float degree){
     float point1, point2, point3;
     // Koordinat titik yang akan dirotasi
     point1 = a.GetX();
@@ -50,23 +95,23 @@ Vector TransformRotate(Vector a, Vector center, float degree){
     // Sumbu x
     if(center1==1){
         tempx = point1;
-        tempy = ( point2 * (round(cos( degree * PHI / 180.0 )*100)/100) ) - ( point3 * (round(sin( degree * PHI / 180.0 )*100)/100) );
-        tempz = ( point2 * (round(sin( degree * PHI / 180.0 )*100)/100) ) + ( point3 * (round(cos( degree * PHI / 180.0 )*100)/100) );
+        tempy = ( point2 * (cos( degree * PHI / 180.0 ) ) ) - ( point3 * (sin( degree * PHI / 180.0 ) ) );
+        tempz = ( point2 * (sin( degree * PHI / 180.0 ) ) ) + ( point3 * (cos( degree * PHI / 180.0 ) ) );
     }
     // Sumbu y
     else if(center2==1){
-        tempx = ( point3 * (round(sin( degree * PHI / 180.0 )*100)/100) ) + ( point1 * (round(cos( degree * PHI / 180.0 )*100)/100) );
+        tempx = ( point3 * (sin( degree * PHI / 180.0 ) ) ) + ( point1 * (cos( degree * PHI / 180.0 ) ) );
         tempy = point2;
-        tempz = ( point3 * (round(cos( degree * PHI / 180.0 )*100)/100) ) - ( point1 * (round(sin( degree * PHI / 180.0 )*100)/100) );
+        tempz = ( point3 * (cos( degree * PHI / 180.0 ) ) ) - ( point1 * (sin( degree * PHI / 180.0 ) ) );
     }
     // Sumbu z
     else{
-        tempx = ( point1 * (round(cos( degree * PHI / 180.0 )*100)/100) ) - ( point2 * (round(sin( degree * PHI / 180.0 )*100)/100) );
-        tempy = ( point1 * (round(sin( degree * PHI / 180.0 )*100)/100) ) + ( point2 * (round(cos( degree * PHI / 180.0 )*100)/100) );
+        tempx = ( point1 * (cos( degree * PHI / 180.0 ) ) ) - ( point2 * (sin( degree * PHI / 180.0 ) ) );
+        tempy = ( point1 * (sin( degree * PHI / 180.0 ) ) ) + ( point2 * (cos( degree * PHI / 180.0 ) ) );
         tempz = point3;
     }
 
-    Vector res(tempx, tempy, tempz);
+	Point res(tempx, tempy, tempz);
     return res;
 }
 #endif

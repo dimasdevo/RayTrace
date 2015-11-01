@@ -18,6 +18,11 @@ public:
 	float GetZ(){
 		return z;
 	}
+	void SetXYZ(float a, float b, float c){
+		x=a;
+		y=b;
+		z=c;
+	}
 	void SetX(float a){
 		x=a;
 	}

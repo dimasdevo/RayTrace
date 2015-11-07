@@ -4,12 +4,17 @@
 #include "Point.h"
 #include "Vector.h"
 #include "Ray.h"
+#include "IntersectionPoint.h"
 
 class Triangle{
 private:
 	Point A;
 	Point B;
 	Point C;
+	Color emission;
+	Color diffuse;
+	Color specular;
+	float shiness;
 public:
 	Triangle();
 	void SetTriangle(Point a, Point b, Point c){
@@ -17,6 +22,30 @@ public:
 		B=b;
 		C=c;
 	}	
+	void SetEmission(Color temp){
+		emission=temp;
+	}
+	void SetDiffuse(Color temp){
+		diffuse=temp;
+	}
+	void SetSpecular(Color temp){
+		specular=temp;
+	}
+	void SetShiness(float temp){
+		shiness=temp;
+	}
+	Color GetEmission(){
+		return emission;
+	}
+	Color GetDiffuse(){
+		return diffuse;
+	}
+	Color GetSpecular(){
+		return specular;
+	}
+	float GetShiness(){
+		return shiness;
+	}
 	Point GetA(){
 		return A;
 	};
@@ -32,7 +61,8 @@ Triangle::Triangle(){};
 
 // -------------- Function Triangle Intersection -----------------------------------------------
 
-float Intersection_Triangle(Ray ray, Triangle obj){
+IntersectionPoint Intersection_Triangle(Ray ray, Triangle obj){
+	IntersectionPoint intersectionhit;
 	Point A=obj.GetA();
 	Point B=obj.GetB();
 	Point C=obj.GetC();
@@ -43,7 +73,8 @@ float Intersection_Triangle(Ray ray, Triangle obj){
 	float a=(ray.getDirection()).dotProduct(n);
 	if(a==0){
 		//Ray Paralel
-		return -1;
+		intersectionhit.SetDistance(-1);
+		return intersectionhit;
 	}else{
 		float t = (dotProduct(n,A)-dotProduct(n,ray.getPosition()))/(n.dotProduct(ray.getDirection()));
 	
@@ -74,9 +105,16 @@ float Intersection_Triangle(Ray ray, Triangle obj){
 			float a=eye.GetX()-Qx;
 			float b=eye.GetY()-Qy;
 			float c=eye.GetZ()-Qz;
-			return sqrt(a*a+b*b+c*c);
-		}else
-			return -1;
+			float distance=sqrt(a*a+b*b+c*c);
+			intersectionhit.SetDistance(distance);
+			intersectionhit.SetIntersectionPoint(Q);
+			intersectionhit.SetNormal(n);
+			return intersectionhit;
+		}
+		else{
+			intersectionhit.SetDistance(-1);
+			return intersectionhit;
+		}
 	}
 }
 

@@ -10,6 +10,11 @@
 #include "Triangle.h"
 #include "FreeImage.h"
 #include "Transformation.h"
+#include "Color.h"
+#include "Light.h"
+#include "Intersection.h"
+#include "Scene.h"
+#include "IntersectionPoint.h"
 
 #define VECTOR 3
 #define PHI 3.14159265
@@ -17,61 +22,10 @@
 
 using namespace std;
 
-class Intersection{
-private:
-	//if obj==1 circle, obj==2 triangle
-	int obj;
-	int obj_list;
-public:
-	Intersection(){};
-	void Set_Intersection(int a, int b){
-		obj=a;
-		obj_list=b;
-	}
-	int Get_Obj(){
-		return obj;
-	}
-	int Get_ObjList(){
-		return obj_list;
-	}
-};
-
-class Scene{
-private:
-	Sphere sphere[10];
-	Triangle tri[10];
-	int sphereCount;
-	int triCount;
-public:
-	Scene();
-	void Add_Sphere(Sphere temp){
-		sphere[sphereCount]=temp;
-		sphereCount++;
-	}
-	void Add_Triangle(Triangle temp){
-		tri[triCount]=temp;
-		triCount++;
-	}
-	int Get_SphereCount(){
-		return sphereCount;
-	}
-	int Get_TriCount(){
-		return triCount;
-	}
-	Sphere Get_Sphere(int flag){
-		return sphere[flag];
-	}
-	Triangle Get_Tri(int flag){
-		return tri[flag];
-	}
-};
-Scene::Scene(){
-	sphereCount=0;
-	triCount=0;
-};
 // ----------------- Codingan Part 2 (Ray intersection)---------------------------------------------
 Intersection Intersect(Ray ray, Scene scene){
 	Intersection intersectionInfo;
+	IntersectionPoint intersectionhit,temp;
 	int triCount=scene.Get_TriCount();
 	int SphereCount=scene.Get_SphereCount();
 	// Find Intersection
@@ -79,34 +33,40 @@ Intersection Intersect(Ray ray, Scene scene){
 	float t=-1, mindist=-1;
 	for(int i=0; i<triCount; i++){
 		Triangle tri=scene.Get_Tri(i);
-		t=Intersection_Triangle(ray, tri);
+		temp=Intersection_Triangle(ray, tri);
+		t=temp.GetDistance();
 		if(t!=-1 && mindist<t){
 			obj=2;
 			obj_list=i;
+			intersectionhit=temp;
 		}
 	}
 	for(int j=0; j<SphereCount; j++){
 		Sphere sphere=scene.Get_Sphere(j);
 		if(sphere.GetTTransform()>0){
 			//cout<<"aye";
-			Ray temp=ray;
+			Ray tempRay=ray;
 			for (int a = 0; a < sphere.GetTTransform(); a++)
 			{
 				Point scale=sphere.GetTransformSphere(a);
-				temp.setRay(InvTransformScale
-					(scale,temp.getPosition()),InvTransformScale(scale,temp.getDirection()));
+				tempRay.setRay(InvTransformScale
+					(scale,tempRay.getPosition()),InvTransformScale(scale,tempRay.getDirection()));
 			}
-			t=Intersection_Sphere(temp,sphere);
+			temp=Intersection_Sphere(tempRay,sphere);
+			t=temp.GetDistance();
 		}
 		else{
-			t=Intersection_Sphere(ray, sphere);
+			temp=Intersection_Sphere(ray, sphere);
+			t=temp.GetDistance();
 		}
 		if(t!=-1 && mindist<t){
 			obj=1;
 			obj_list=j;
+			intersectionhit=temp;
 		}
 	}
 	intersectionInfo.Set_Intersection(obj,obj_list);
+	intersectionInfo.SetIntersectionPoint(intersectionhit);
 	return intersectionInfo;
 }
 // ----------------- Codingan Part 1 (Camera Position)---------------------------------------------
@@ -141,16 +101,16 @@ float GetNFovy(float fov){
 }
 
 float GetNFovx(float Nfovy, float aspectRatio){
-	return Nfovy/aspectRatio;
+	return Nfovy*aspectRatio;
 }
 
-float GetDirectionA(float fov, int size, int var){
-	float direction=fov*((float)var-(size/2))/size;
+float GetDirectionA(float fov, float size, int var){
+	float direction=fov*((float)var-((float)size/2))/(size/2);
 	return direction;
 }
 
-float GetDirectionB(float fov, int size, int var){
-	float direction=fov*((float)(size/2)-var)/size;
+float GetDirectionB(float fov, float size, int var){
+	float direction=fov*((size/2)-(float)var)/(size/2);
 	return direction;
 }
 
@@ -181,12 +141,104 @@ Ray RayThruPixel(Camera cam, int i, int j, float width, float height){
 	float fovy=cam.Getfovy();
 	float Nfovy=GetNFovy(fovy);
 	float Nfovx=GetNFovx(Nfovy,width/height);
-	float a=GetDirectionA(Nfovx, width, j)*(Nfovy/Nfovx);
-	float b=GetDirectionB(Nfovy, height, i)*(Nfovx/Nfovy);
+	float a=GetDirectionA(Nfovx, width, j);
+	float b=GetDirectionB(Nfovy, height, i);
 	temp=ComputeRay(cam,norm,a,b);
 	return temp;
 }
 
+//---------------------- Hint Color --------------------------------------------
+
+Color FindColor(Intersection hit, Scene scene,Ray ray){
+	Color Background;
+	Color Object;
+	if(hit.Get_Obj()>0){
+		IntersectionPoint hitpoint=hit.GetInterSectionPoint();
+		Object.AddColor(scene.Get_Ambient());
+		if (hit.Get_Obj()==1)
+		{
+			Sphere sphere=scene.Get_Sphere(hit.Get_ObjList());
+			Object.AddColor(sphere.GetEmission());
+			//cout<<Object.GetRed()<<" "<<Object.GetGreen()<<" "<<Object.GetBlue()<<'\n';
+			for (int i = 0; i < scene.Get_LightCount(); i++)
+			{
+				Light light=scene.Get_Light(i);
+				Color lightcolor=light.getColor();
+				// Li = Bisa Berubah
+				float Li=1;
+				Point VertPost=hitpoint.GetInterSectionPoint();
+				Point Position=ray.getPosition();
+				//cout<<"VertPost:"<<VertPost.GetX()<<" "<<VertPost.GetY()<<" "<<VertPost.GetZ()<<'\n';
+				Vector ViewDir(Position.GetX()-VertPost.GetX(),Position.GetY()-VertPost.GetY(),Position.GetZ()-VertPost.GetZ());
+				ViewDir.normalize();
+				//cout<<"ViewDir:"<<ViewDir.GetX()<<" "<<ViewDir.GetY()<<" "<<ViewDir.GetZ()<<'\n';
+				Point LightPos=light.getPosition();
+				//cout<<"LightPost:"<<LightPos.GetX()<<" "<<LightPos.GetY()<<" "<<LightPos.GetZ()<<'\n';
+				Vector LightDir(LightPos.GetX()-VertPost.GetX(),LightPos.GetY()-VertPost.GetY(),-1*(LightPos.GetZ()-VertPost.GetZ()));
+				LightDir.normalize();
+				//cout<<"LightDir:"<<LightDir.GetX()<<" "<<LightDir.GetY()<<" "<<LightDir.GetZ()<<'\n';
+				Vector Normal=hitpoint.GetNormal();
+				Normal.normalize();
+				//cout<<"Normal:"<<Normal.GetX()<<" "<<Normal.GetY()<<" "<<Normal.GetZ()<<'\n';
+				Vector HalfDir(LightDir.GetX()+ViewDir.GetX(),LightDir.GetY()+ViewDir.GetY(),LightDir.GetZ()+ViewDir.GetZ());
+				HalfDir.normalize();
+				//cout<<"HalfDir:"<<HalfDir.GetX()<<" "<<HalfDir.GetY()<<" "<<HalfDir.GetZ()<<'\n';
+				float lamb=LightDir.dotProduct(Normal);
+				float spectangle=HalfDir.dotProduct(Normal);
+				//cout<<lamb<<"-"<<spectangle<<'\n';
+				if(lamb<0)lamb=0;
+				if(spectangle<0)spectangle=0;
+				Color HasilLamb=dotColor(sphere.GetDiffuse(),lamb);
+				//cout<<HasilLamb.GetRed()<<" "<<HasilLamb.GetGreen()<<" "<<HasilLamb.GetBlue()<<'\n';
+				Color HasilSpec=dotColor(sphere.GetSpecular(),pow(spectangle,sphere.GetShiness()));
+				HasilLamb.AddColor(HasilSpec);
+				//cout<<HasilLamb.GetRed()<<" "<<HasilLamb.GetGreen()<<" "<<HasilLamb.GetBlue()<<'\n';
+				//HasilLamb.SetRGB(pow(HasilLamb.GetRed(),sphere.GetShiness()),pow(HasilLamb.GetGreen(),sphere.GetShiness()),pow(HasilLamb.GetBlue(),sphere.GetShiness()));
+				//cout<<HasilLamb.GetRed()<<" "<<HasilLamb.GetGreen()<<" "<<HasilLamb.GetBlue()<<'\n';
+				HasilLamb.SetRGB(HasilLamb.GetRed()*lightcolor.GetRed(),HasilLamb.GetGreen()*lightcolor.GetGreen(),HasilLamb.GetBlue()*lightcolor.GetBlue());
+				//cout<<HasilLamb.GetRed()<<" "<<HasilLamb.GetGreen()<<" "<<HasilLamb.GetBlue()<<'\n';
+				Object.AddColor(HasilLamb);
+				//cout<<Object.GetRed()<<" "<<Object.GetGreen()<<" "<<Object.GetBlue()<<'\n';
+				//system("PAUSE");
+
+			}
+		}
+		else if (hit.Get_Obj()==2)
+		{
+			Triangle tri=scene.Get_Tri(hit.Get_ObjList());
+			Object.AddColor(tri.GetEmission());
+			for (int i = 0; i < scene.Get_LightCount(); i++)
+			{
+				Light light=scene.Get_Light(i);
+				// Li = Bisa Berubah
+				float Li=1;
+				// Hi Half Angle
+				Point VertPost=hitpoint.GetInterSectionPoint();
+				Vector ViewDir(VertPost.GetX()*-1,VertPost.GetY()*-1,VertPost.GetZ()*-1);
+				ViewDir.normalize();
+				Point LightPos=light.getPosition();
+				Vector LightDir(LightPos.GetX()-VertPost.GetX(),LightPos.GetY()-VertPost.GetY(),LightPos.GetZ()-VertPost.GetZ());
+				LightDir.normalize();
+				Vector Normal=hitpoint.GetNormal();
+				Vector HalfDir(LightDir.GetX()+ViewDir.GetX(),LightDir.GetY()+ViewDir.GetY(),LightDir.GetZ()+ViewDir.GetZ());
+				HalfDir.normalize();
+				float lamb=LightDir.dotProduct(Normal);
+				if(lamb<0)lamb=0;
+				float spectangle=HalfDir.dotProduct(Normal);
+				if(spectangle<0)spectangle=0;
+				Object.AddColor(dotColor(tri.GetDiffuse(),lamb));
+				Object.AddColor(dotColor(tri.GetSpecular(),pow(spectangle,tri.GetShiness())));
+				//cout<<lamb<<"-"<<spectangle<<'\n';
+			}
+
+		}
+		return Object;
+	}
+	else{
+		Background.SetRGB(0,0,0);
+		return Background;
+	}
+}
 
 //  --------------------- RayTrace Algorithm --------------------------------------
 void RayTrace(Camera cam, float width, float height, Scene scene, char output[]){
@@ -202,19 +254,11 @@ void RayTrace(Camera cam, float width, float height, Scene scene, char output[])
 		for(int j=0; j<width; j++){
 			Ray ray=RayThruPixel(cam, i, j, width, height);
 			Intersection hit=Intersect(ray,scene);
-			if(hit.Get_Obj()>0){
-				color.rgbGreen=255;
-				color.rgbBlue=255;
-				color.rgbRed=255;
-				FreeImage_SetPixelColor(bitmap,j,height-i-1,&color);
-				//cout<<hit.Get_Obj()<<'\n';
-			}
-			else{
-				color.rgbGreen=255;
-				color.rgbBlue=0;
-				color.rgbRed=0;
-				FreeImage_SetPixelColor(bitmap,j,height-i-1,&color);
-			}
+			Color image=FindColor(hit, scene,ray);
+			color.rgbGreen=image.NormalizeG();
+			color.rgbBlue=image.NormalizeB();
+			color.rgbRed=image.NormalizeR();
+			FreeImage_SetPixelColor(bitmap,j,height-i-1,&color);
 		}
 	}
 	if(FreeImage_Save(FIF_PNG,bitmap,output,0))
@@ -226,10 +270,12 @@ void RayTrace(Camera cam, float width, float height, Scene scene, char output[])
 
 int main(int argc, char *argv[])
 {
-	Point posisiKamera[4];
+	Light light;
+	Color ambient, emmision, diffuse, specular,LightColor; 
+	Point posisiKamera[4], posisiLight;
 	Scene scene;
-	float a,b,c,fov,width,height;
-	int jmlInput, jmlTrans, inpTransformasi, inpBenda;
+	float a,b,c,fov,width,height,R,G,B, shiness;
+	int jmlInput, jmlTrans, inpTransformasi, inpBenda, jmlLight;
 	cout<<"Masukkan Lebar dan Tinggi gambar :"<<'\n';
 	cin>>width>>height;
 	cout<<"Masukkan koordinat kamera: \n";
@@ -241,6 +287,21 @@ int main(int argc, char *argv[])
 		posisiKamera[i].SetZ(c);
 	}
 	cin>>fov;
+	cout<<"Masukkan Warna Ambient :";
+	cin>>R>>G>>B;
+	ambient.SetRGB(R,G,B);
+	scene.Add_Ambient(ambient);
+	cout<<"Masukkan Jumlah Light :";
+	cin>>jmlLight;
+	for (int i = 0; i < jmlLight; i++)
+	{
+		cout<<"Masukkan Variabel Light : (Position dan RGB :) \n";
+		cin>>a>>b>>c>>R>>G>>B;
+		LightColor.SetRGB(R,G,B);
+		posisiLight.SetXYZ(a,b,c);
+		light.setLight(posisiLight,LightColor);
+		scene.Add_Light(light);
+	}
 	Camera A(posisiKamera[0], posisiKamera[1], posisiKamera[2],fov);
 	A.print();
 	cout<<"Masukkan Jumlah Benda : ";
@@ -260,6 +321,21 @@ int main(int argc, char *argv[])
 			cin>>x>>y>>z>>radius;
 			sphere1.SetXYZ(x,y,z);
 			sphere.SetSphere(sphere1,radius);
+			cout<<"Masukkan Warna Emission :";
+			cin>>R>>G>>B;
+			emmision.SetRGB(R,G,B);
+			sphere.SetEmission(emmision);
+			cout<<"Masukkan Warna Diffuse :";
+			cin>>R>>G>>B;
+			diffuse.SetRGB(R,G,B);
+			sphere.SetDiffuse(diffuse);
+			cout<<"Masukkan Warna Specular :";
+			cin>>R>>G>>B;
+			specular.SetRGB(R,G,B);
+			sphere.SetSpecular(specular);
+			cout<<"Masukkan Shiness :";
+			cin>>shiness;
+			sphere.SetShiness(shiness);
 		}
 		else if(inpBenda==2)
 		{
@@ -269,6 +345,21 @@ int main(int argc, char *argv[])
 			Tri2.SetXYZ(x2,y2,z2);
 			Tri3.SetXYZ(x3,y3,z3);
 			tri.SetTriangle(Tri1,Tri2,Tri3);
+			cout<<"Masukkan Warna Emission :";
+			cin>>R>>G>>B;
+			emmision.SetRGB(R,G,B);
+			tri.SetEmission(emmision);
+			cout<<"Masukkan Warna Diffuse :";
+			cin>>R>>G>>B;
+			diffuse.SetRGB(R,G,B);
+			tri.SetDiffuse(diffuse);
+			cout<<"Masukkan Warna Specular :";
+			cin>>R>>G>>B;
+			specular.SetRGB(R,G,B);
+			tri.SetSpecular(specular);
+			cout<<"Masukkan Shiness :";
+			cin>>shiness;
+			tri.SetShiness(shiness);
 		}
 		else
 		{
@@ -307,7 +398,7 @@ int main(int argc, char *argv[])
 					sphere1=TransformRotate(sphere.GetCenter(),temp,derajat);
 					sphere.SetSphere(sphere1,sphere.GetRadius());
 				}
-				else if(inpBenda==2);
+				else if(inpBenda==2)
 				{
 					Tri1=TransformRotate(tri.GetA(),temp,derajat);
 					Tri2=TransformRotate(tri.GetB(),temp,derajat);
